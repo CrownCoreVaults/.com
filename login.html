@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Login - CrownCore Vaults Professional Vaulting</title>
+    <meta name="description" content="Secure login portal for CrownCore Vaults clients. Access your vault dashboard, manage precious metals storage, and view account information.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --vault-green: #16a34a;
+            --vault-dark-green: #15803d;
+            --vault-gold: #f59e0b;
+            --vault-light: #f8fafc;
+            --vault-gray: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            margin-top: 64px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            color: var(--vault-green);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #1f2937;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--vault-green);
+            border-bottom-color: var(--vault-green);
+        }
+
+        .login-btn {
+            background: var(--vault-green);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background: var(--vault-dark-white);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 20px;
+        }
+
+        .mobile-menu.active {
+            display: block;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+        }
+
+        .mobile-nav-links li {
+            margin-bottom: 15px;
+        }
+
+        .mobile-nav-links a {
+            display: block;
+            padding: 10px 0;
+            text-decoration: none;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        /* Login Section */
+        .login-section {
+    min-height: calc(100vh - 64px);
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('images/lp4.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            padding: 40px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .login-logo-icon {
+            width: 48px;
+            height: 48px;
+            color: var(--vault-green);
+        }
+
+        .login-logo-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: #6b7280;
+        }
+
+        /* Form Styles */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--vault-green);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: -10px 0 10px 0;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--vault-green);
+        }
+
+        .remember-me label {
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .forgot-password {
+            font-size: 14px;
+            color: var(--vault-green);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .forgot-password:hover {
+            color: var(--vault-dark-green);
+        }
+
+        .login-btn-form {
+            width: 100%;
+            background: var(--vault-green);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-btn-form:hover {
+            background: var(--vault-dark-green);
+        }
+
+        .login-btn-form:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Demo Credentials */
+        .demo-credentials {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .demo-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+
+        .demo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .demo-credential {
+            font-size: 12px;
+            color: #6b7280;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .demo-credential:hover {
+            background: var(--vault-light);
+            border-color: var(--vault-green);
+        }
+
+        /* Messages */
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .message.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .message.hidden {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .login-card {
+                padding: 30px 25px;
+            }
+
+            .login-section {
+                padding: 20px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 25px 20px;
+            }
+
+            .login-logo-text {
+                font-size: 1.75rem;
+            }
+
+            .login-title {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM12 7C13.4 7 14.8 8.6 14.8 10V11.5C15.4 11.5 16 12.1 16 12.5V16.5C16 17.1 15.4 17.5 14.8 17.5H9.2C8.6 17.5 8 17.1 8 16.5V12.5C8 12.1 8.6 11.5 9.2 11.5V10C9.2 8.6 10.6 7 12 7ZM12 8.2C11.2 8.2 10.5 8.9 10.5 10V11.5H13.5V10C13.5 8.9 12.8 8.2 12 8.2Z"/>
+                </svg>
+                <span class="logo-text">CrownCore Vaults</span>
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="login.html" class="login-btn active">Login</a></li>
+            </ul>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+        
+        <div class="mobile-menu" id="mobileMenu">
+            <ul class="mobile-nav-links">
+                <li><a href="index.html" onclick="toggleMobileMenu()">Home</a></li>
+                <li><a href="services.html" onclick="toggleMobileMenu()">Services</a></li>
+                <li><a href="contact.html" onclick="toggleMobileMenu()">Contact</a></li>
+                <li><a href="login.html" onclick="toggleMobileMenu()">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Login Section -->
+    <section class="login-section">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <svg class="login-logo-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM12 7C13.4 7 14.8 8.6 14.8 10V11.5C15.4 11.5 16 12.1 16 12.5V16.5C16 17.1 15.4 17.5 14.8 17.5H9.2C8.6 17.5 8 17.1 8 16.5V12.5C8 12.1 8.6 11.5 9.2 11.5V10C9.2 8.6 10.6 7 12 7ZM12 8.2C11.2 8.2 10.5 8.9 10.5 10V11.5H13.5V10C13.5 8.9 12.8 8.2 12 8.2Z"/>
+                        </svg>
+                        <span class="login-logo-text">CrownCore Vaults</span>
+                    </div>
+                    <h2 class="login-title">Client Access Portal</h2>
+                    <p class="login-subtitle">Access your secure vault dashboard</p>
+                </div>
+                
+                <div id="messageContainer" class="message hidden"></div>
+                
+                <form class="login-form" id="loginForm">
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" name="username" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-options">
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember" name="remember">
+                            <label for="remember">Remember me</label>
+                        </div>
+                        <a href="#" class="forgot-password">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="login-btn-form" id="loginButton">
+                        Sign In
+                    </button>
+                </form>
+                
+                
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Demo customer data
+        const customers = {
+            'john.smith': {
+                profilePhoto: 'images/jm.JPG',
+                password: 'password123',
+                fullName: 'John Smith',
+                dateOfBirth: '1985-06-15',
+                email: 'john.smith@email.com',
+                phoneNumber: '+1 (555) 123-4567',
+                address: '123 Main Street, Apt 4B\nNew York, NY 10001\nUnited States',
+                invoiceNumber: 'SV-2023-001234',
+                clientId: 'SV-001234',
+
+                vaultItems: [
+                    {
+                        id: 1,
+                        itemType: 'Gold Bars',
+                        description: '24K Gold Bars - LBMA Certified',
+                        quantity: '15.5 oz',
+                        value: '$31,250.00',
+                        dateStored: '2023-01-15'
+                    },
+                    {
+                        id: 2,
+                        itemType: 'Documents',
+                        description: 'Property Deeds & Insurance Papers',
+                        quantity: '1 Portfolio',
+                        value: 'N/A',
+                        dateStored: '2023-01-15'
+                    },
+                    {
+                        id: 3,
+                        itemType: 'Jewelry',
+                        description: 'Diamond Ring - 2.5 Carat',
+                        quantity: '1 piece',
+                        value: '$25,000.00',
+                        dateStored: '2023-01-15'
+                    }
+                ]
+            },
+            'sarah.johnson': {
+                profilePhoto: 'images/jm.JPG',
+                password: 'securepass456',
+                fullName: 'Sarah Johnson',
+                dateOfBirth: '1990-03-22',
+                email: 'sarah.johnson@email.com',
+                phoneNumber: '+1 (555) 987-6543',
+                address: '456 Oak Avenue\nBoston, MA 02101\nUnited States',
+                invoiceNumber: 'SV-2023-001235',
+                clientId: 'SV-001235',
+                
+                vaultItems: []
+            },
+            'michael.brown': {
+                profilePhoto: 'images/jm.JPG',
+                password: 'vault789',
+                fullName: 'Michael Brown',
+                dateOfBirth: '1978-11-08',
+                email: 'michael.brown@email.com',
+                phoneNumber: '+1 (555) 456-7890',
+                address: '789 Pine Street\nChicago, IL 60601\nUnited States',
+                invoiceNumber: 'SV-2023-001236',
+                clientId: 'SV-001236',
+                
+                vaultItems: []
+            },
+            'King': {
+                profilePhoto: 'images/jm.JPG',
+                password: '123',
+                fullName: 'King Koddok',
+                dateOfBirth: '1991-11-10',
+                email: 'king@email.com',
+                phoneNumber: '0246677089',
+                address: '321 Elm Drive\nLos Angeles, CA 10011\nUnited States',
+                invoiceNumber: 'SV-2023-001237',
+                clientId: 'SV-006677',
+                
+                vaultItems: [
+{
+                        id: 1,
+                        itemType: 'Jewelry',
+                        description: 'Diamond Ring - 2.5 Carat',
+                        quantity: '1 piece',
+                        value: '$25,000.00',
+                        dateStored: '2023-01-15'
+                    },
+                    ]
+            },
+            'david.wilson': {
+                profilePhoto: 'images/jm.JPG',
+                password: 'diamond999',
+                fullName: 'David Wilson',
+                dateOfBirth: '1983-12-03',
+                email: 'david.wilson@email.com',
+                phoneNumber: '+1 (555) 654-3210',
+                address: '654 Maple Lane\nMiami, FL 33101\nUnited States',
+                invoiceNumber: 'SV-2023-001238',
+                clientId: 'SV-001238',
+                
+                vaultItems: []
+            }
+        };
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('active');
+        }
+
+        // Fill demo credentials
+        function fillCredentials(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.textContent = text;
+            messageContainer.className = `message ${type}`;
+        }
+
+        // Login form handling
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Disable login button
+            loginButton.disabled = true;
+            loginButton.textContent = 'Signing In...';
+            
+            // Simulate network delay
+            setTimeout(() => {
+                // Check credentials
+                const customer = customers[username];
+                
+                if (customer && customer.password === password) {
+                    // Store session data
+                    const sessionData = {
+                        username: username,
+                        customer: customer,
+                        loginTime: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('vaultSession', JSON.stringify(sessionData));
+                    
+                    showMessage(`Welcome ${customer.fullName}!`, 'success');
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    showMessage('Invalid credentials. Please check the demo credentials provided.', 'error');
+                    
+                    // Re-enable login button
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Sign In';
+                }
+            }, 1000);
+        });
+
+        // Check if already logged in
+        function checkSession() {
+            const sessionData = localStorage.getItem('vaultSession');
+            if (sessionData) {
+                try {
+                    const session = JSON.parse(sessionData);
+                    // Check if session is still valid (less than 24 hours old)
+                    const loginTime = new Date(session.loginTime);
+                    const now = new Date();
+                    const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+                    
+                    if (hoursDiff < 24) {
+                        // Session is still valid, redirect to dashboard
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        // Session expired, clear it
+                        localStorage.removeItem('vaultSession');
+                    }
+                } catch (error) {
+                    // Invalid session data, clear it
+                    localStorage.removeItem('vaultSession');
+                }
+            }
+        }
+
+        // Active navigation link
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const navLinks = document.querySelectorAll('.nav-links a, .mobile-nav-links a');
+        
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+
+        // Check session on page load
+        checkSession();
+
+        // Form validation
+        const usernameField = document.getElementById('username');
+        const passwordField = document.getElementById('password');
+
+        usernameField.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.style.borderColor = '#dc2626';
+            } else {
+                this.style.borderColor = '#e5e7eb';
+            }
+        });
+
+        passwordField.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.style.borderColor = '#dc2626';
+            } else {
+                this.style.borderColor = '#e5e7eb';
+            }
+        });
+
+        // Clear any existing messages when typing
+        usernameField.addEventListener('input', function() {
+            document.getElementById('messageContainer').className = 'message hidden';
+        });
+
+        passwordField.addEventListener('input', function() {
+            document.getElementById('messageContainer').className = 'message hidden';
+        });
+    </script>
+</body>
+</html>

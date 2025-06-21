@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CrownCore Vaults Client Portal</title>
+    <meta name="description" content="CrownCore Vaults client dashboard. Manage your vault contents, view account information, and access secure storage details.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --vault-green: #16a34a;
+            --vault-dark-green: #15803d;
+            --vault-gold: #f59e0b;
+            --vault-light: #f8fafc;
+            --vault-gray: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background: var(--vault-light);
+            margin-top: 64px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            color: var(--vault-green);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #1f2937;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--vault-green);
+            border-bottom-color: var(--vault-green);
+        }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 20px;
+        }
+
+        .mobile-menu.active {
+            display: block;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+        }
+
+        .mobile-nav-links li {
+            margin-bottom: 15px;
+        }
+
+        .mobile-nav-links a {
+            display: block;
+            padding: 10px 0;
+            text-decoration: none;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        /* Main Dashboard */
+        .dashboard {
+            min-height: calc(100vh - 64px);
+            padding: 40px 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .status-badge {
+            background: var(--vault-green);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .card-content {
+            padding: 30px;
+        }
+
+        /* Profile Section */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #f9fafb;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--vault-green);
+            background: white;
+        }
+
+        .form-input.editable,
+        .form-textarea.editable,
+        .form-select.editable {
+            background: white;
+            border-color: var(--vault-green);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .readonly-field {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #6b7280;
+            white-space: pre-line;
+        }
+
+        /* Profile Photo */
+        .profile-photo-section {
+            text-align: center;
+        }
+
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--vault-green);
+            margin-bottom: 20px;
+        }
+
+        .profile-info {
+            margin-top: 30px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        /* Vault Contents */
+        .vault-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .vault-table th,
+        .vault-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .vault-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .vault-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .item-type {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .icon-gold {
+            background: var(--vault-gold);
+            color: white;
+        }
+
+        .icon-blue {
+            background: #2563eb;
+            color: white;
+        }
+
+        .icon-purple {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .message.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .message.hidden {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .vault-table {
+                font-size: 14px;
+            }
+
+            .vault-table th,
+            .vault-table td {
+                padding: 10px 8px;
+            }
+
+            .container {
+                padding: 0 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card-content {
+                padding: 20px;
+            }
+
+            .card-header {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM12 7C13.4 7 14.8 8.6 14.8 10V11.5C15.4 11.5 16 12.1 16 12.5V16.5C16 17.1 15.4 17.5 14.8 17.5H9.2C8.6 17.5 8 17.1 8 16.5V12.5C8 12.1 8.6 11.5 9.2 11.5V10C9.2 8.6 10.6 7 12 7ZM12 8.2C11.2 8.2 10.5 8.9 10.5 10V11.5H13.5V10C13.5 8.9 12.8 8.2 12 8.2Z"/>
+                </svg>
+                <span class="logo-text">CrownCore Vaults</span>
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><button onclick="logout()" class="logout-btn">🚪 Logout</button></li>
+            </ul>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+        
+        <div class="mobile-menu" id="mobileMenu">
+            <ul class="mobile-nav-links">
+                <li><a href="index.html" onclick="toggleMobileMenu()">Home</a></li>
+                <li><a href="services.html" onclick="toggleMobileMenu()">Services</a></li>
+                <li><a href="contact.html" onclick="toggleMobileMenu()">Contact</a></li>
+                <li><button onclick="logout()" class="logout-btn" style="width: 100%; margin-top: 10px;">🚪 Logout</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+        <div class="container">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="header-content">
+                    <h1>Client Dashboard</h1>
+                    <span class="status-badge">Active Account</span>
+                </div>
+            </div>
+
+            <div id="messageContainer" class="message hidden"></div>
+
+            <!-- Main Grid -->
+            <div class="dashboard-grid">
+                <!-- Personal Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Personal Information</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="profile-grid">
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" id="fullName" class="form-input" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" id="dateOfBirth" class="form-input" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" id="email" class="form-input" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" id="phoneNumber" class="form-input" readonly>
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label class="form-label">Residential Address</label>
+                                <textarea id="address" class="form-textarea" readonly></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Deposit Security Invoice</label>
+                                <div id="invoiceNumber" class="readonly-field"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Account Status</label>
+                                <div id="accountStatus" class="readonly-field">Active</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Photo -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Profile Photo</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="profile-photo-section">
+                            <img id="profilePhoto" src="" alt="Profile Photo" class="profile-photo">
+                        </div>
+                        
+                        <div class="profile-info">
+                            <div class="info-item">
+                                <span class="info-label">Client ID:</span>
+                                <span class="info-value" id="clientId"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Member Since:</span>
+                                <span class="info-value">March 15, 2020</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Security Level:</span>
+                                <span class="info-value">Premium</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vault Contents -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Vault Contents</h2>
+                </div>
+                <div class="card-content">
+                    <div style="overflow-x: auto;">
+                        <table class="vault-table">
+                            <thead>
+                                <tr>
+                                    <th>Item Type</th>
+                                    <th>Description</th>
+                                    <th>Quantity/Weight</th>
+                                    <th>Value (USD)</th>
+                                    <th>Date Stored</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vaultItemsTable">
+                                <!-- Items will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCustomer = null;
+        let isEditing = false;
+        let originalData = {};
+
+        // Check authentication on page load
+        function checkAuth() {
+            const sessionData = localStorage.getItem('vaultSession');
+            if (!sessionData) {
+                // Create demo session data for display purposes
+                const demoSession = {
+                    loginTime: new Date().toISOString(),
+                    customer: {
+                        fullName: 'John Smith',
+                        dateOfBirth: '1985-01-15',
+                        email: 'john.smith@email.com',
+                        phoneNumber: '+1 (555) 123-4567',
+                        address: '123 Main Street\nApartment 4B\nNew York, NY 10001\nUnited States',
+                        invoiceNumber: 'INV-2024-001',
+                        clientId: 'SV-789456',
+                        profilePhoto: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%2316a34a'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='0.35em' fill='white' font-size='40' font-family='Arial'%3EJS%3C/text%3E%3C/svg%3E",
+                        vaultItems: [
+                            {
+                                id: 1,
+                                itemType: 'Gold Bars',
+                                description: '24K Gold Bars - 1oz each',
+                                quantity: '5 bars (5oz total)',
+                                value: '$12,500',
+                                dateStored: '2022-03-15'
+                            },
+                            {
+                                id: 2,
+                                itemType: 'Jewelry',
+                                description: 'Diamond Wedding Ring Set',
+                                quantity: '1 set',
+                                value: '$8,500',
+                                dateStored: '2022-04-02'
+                            },
+                            {
+                                id: 3,
+                                itemType: 'Documents',
+                                description: 'Property Deeds & Legal Documents',
+                                quantity: '1 folder',
+                                value: 'N/A',
+                                dateStored: '2022-03-22'
+                            },
+                            {
+                                id: 4,
+                                itemType: 'Silver Bars',
+                                description: '99.9% Pure Silver Bars',
+                                quantity: '10 bars (100oz total)',
+                                value: '$2,800',
+                                dateStored: '2022-05-10'
+                            }
+                        ]
+                    }
+                };
+                localStorage.setItem('vaultSession', JSON.stringify(demoSession));
+                currentCustomer = demoSession.customer;
+                loadCustomerData();
+                return;
+            }
+
+            try {
+                const session = JSON.parse(sessionData);
+                // Check if session is still valid (less than 24 hours old)
+                const loginTime = new Date(session.loginTime);
+                const now = new Date();
+                const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+                
+                if (hoursDiff >= 24) {
+                    localStorage.removeItem('vaultSession');
+                    // Recreate demo data instead of redirecting
+                    checkAuth();
+                    return;
+                }
+
+                currentCustomer = session.customer;
+                loadCustomerData();
+            } catch (error) {
+                localStorage.removeItem('vaultSession');
+                // Recreate demo data instead of redirecting
+                checkAuth();
+            }
+        }
+
+        // Load customer data into the form
+        function loadCustomerData() {
+            if (!currentCustomer) return;
+
+            document.getElementById('fullName').value = currentCustomer.fullName;
+            document.getElementById('dateOfBirth').value = currentCustomer.dateOfBirth;
+            document.getElementById('email').value = currentCustomer.email;
+            document.getElementById('phoneNumber').value = currentCustomer.phoneNumber;
+            document.getElementById('address').value = currentCustomer.address;
+            document.getElementById('invoiceNumber').textContent = currentCustomer.invoiceNumber;
+            document.getElementById('clientId').textContent = currentCustomer.clientId;
+            document.getElementById('profilePhoto').src = currentCustomer.profilePhoto;
+
+            // Store original data for cancel functionality
+            originalData = {
+                fullName: currentCustomer.fullName,
+                dateOfBirth: currentCustomer.dateOfBirth,
+                email: currentCustomer.email,
+                phoneNumber: currentCustomer.phoneNumber,
+                address: currentCustomer.address
+            };
+
+            loadVaultItems();
+        }
+
+        // Load vault items
+        function loadVaultItems() {
+            const tableBody = document.getElementById('vaultItemsTable');
+            tableBody.innerHTML = '';
+
+            if (!currentCustomer.vaultItems || currentCustomer.vaultItems.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #6b7280; padding: 40px;">No items stored in vault</td></tr>';
+                return;
+            }
+
+            currentCustomer.vaultItems.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="item-type">
+                            <div class="item-icon ${getItemIconClass(item.itemType)}">${getItemIcon(item.itemType)}</div>
+                            ${item.itemType}
+                        </div>
+                    </td>
+                    <td>${item.description}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.value || 'N/A'}</td>
+                    <td>${new Date(item.dateStored).toLocaleDateString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Get item icon
+        function getItemIcon(itemType) {
+            switch (itemType.toLowerCase()) {
+                case 'gold bars':
+                case 'gold':
+                    return '🪙';
+                case 'silver bars':
+                case 'silver':
+                    return '🥈';
+                case 'platinum':
+                    return '⚪';
+                case 'jewelry':
+                    return '💎';
+                case 'documents':
+                    return '📄';
+                case 'collectibles':
+                    return '🏺';
+                default:
+                    return '📦';
+            }
+        }
+
+        function getItemIconClass(itemType) {
+            switch (itemType.toLowerCase()) {
+                case 'gold bars':
+                case 'gold':
+                    return 'icon-gold';
+                case 'jewelry':
+                    return 'icon-purple';
+                case 'documents':
+                    return 'icon-blue';
+                default:
+                    return 'icon-gold';
+            }
+        }
+
+        // Utility functions
+        function showMessage(text, type) {
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.textContent = text;
+            messageContainer.className = `message ${type}`;
+            messageContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageContainer.className = 'message hidden';
+                }, 3000);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('vaultSession');
+            window.location.href = 'index.html';
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('active');
+        }
+
+        // Initialize on page load
+        checkAuth();
+    </script>
+</body>
+</html>
